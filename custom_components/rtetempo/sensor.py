@@ -87,6 +87,9 @@ async def async_setup_entry(
     forecast_coordinator = ForecastCoordinator(hass)
     await forecast_coordinator.async_config_entry_first_refresh()
     
+    # Register cleanup for the forecast coordinator when the config entry is unloaded
+    config_entry.async_on_unload(forecast_coordinator.async_unload)
+    
     NUM_FORECAST_DAYS = 7  # J+1 à J+7
     
     # Skip index 0 (J+1) because RTE provides the official J+1 sensor

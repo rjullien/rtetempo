@@ -30,7 +30,8 @@ class ForecastCoordinator(DataUpdateCoordinator[List[ForecastDay]]):
         self.session = async_get_clientsession(hass)
 
         # Daily uptade after midnight then every 6 hours (JSON is updated around 06:00)
-        async_track_time_change(
+        # Store the cancel function to allow proper cleanup on unload
+        self._cancel_time_change = async_track_time_change(
             hass,
             self._scheduled_refresh,
             hour=7,
@@ -41,6 +42,13 @@ class ForecastCoordinator(DataUpdateCoordinator[List[ForecastDay]]):
         _LOGGER.debug(
             "ForecastCoordinator initialisé : refresh quotidien programmé à 07:00 + intervalle 6h"
         )
+
+    def async_unload(self) -> None:
+        """Cleanup when the coordinator is unloaded."""
+        if self._cancel_time_change is not None:
+            self._cancel_time_change()
+            self._cancel_time_change = None
+            _LOGGER.debug("ForecastCoordinator: time change listener cancelled")
 
     async def _scheduled_refresh(self, now):
         """Update at 07:00 every day."""

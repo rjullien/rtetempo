@@ -30,9 +30,9 @@ async def async_fetch_opendpe_forecast(
     """Fetch Tempo forecasts from the Open DPE JSON."""
 
     try:
-        async with session.get(OPEN_DPE_URL, timeout=10) as response:
+        async with session.get(OPEN_DPE_URL, timeout=aiohttp.ClientTimeout(total=10)) as response:
             if response.status != 200:
-                _LOGGER.error("Open-DPE: HTTP %s", response.status)
+                _LOGGER.error("Open DPE: HTTP %s", response.status)
                 return []
 
             data = await response.json()

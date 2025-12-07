@@ -90,7 +90,7 @@ async def async_setup_entry(
     # Register cleanup for the forecast coordinator when the config entry is unloaded
     config_entry.async_on_unload(forecast_coordinator.async_unload)
     
-    NUM_FORECAST_DAYS = 7  # 6 forecast days (J+2 à J+7)
+    NUM_FORECAST_DAYS = 7  # 7 total days, but only 6 forecast sensors created (J+2 à J+7; J+1 is skipped)
     
     # Skip index 0 (J+1) because RTE provides the official J+1 sensor
     for index in range(1, NUM_FORECAST_DAYS):

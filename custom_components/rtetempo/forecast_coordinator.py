@@ -10,6 +10,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_time_change
 
 from .forecast import ForecastDay, async_fetch_opendpe_forecast
+from .tempo_rules import apply_tempo_rules
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -59,8 +60,9 @@ class ForecastCoordinator(DataUpdateCoordinator[List[ForecastDay]]):
         """Open DPE data recovery."""
         try:
             forecasts = await async_fetch_opendpe_forecast(self.session)
-            _LOGGER.debug("Open DPE: %s jours récupérés", len(forecasts))
-            return forecasts
+            adjusted_forecasts = apply_tempo_rules(forecasts)
+            _LOGGER.debug("Open DPE: %s jours récupérés et ajustés", len(adjusted_forecasts))
+            return adjusted_forecasts
 
         except Exception as exc:
             _LOGGER.error("Open DPE: erreur lors de la mise à jour: %s", exc)

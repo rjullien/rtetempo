@@ -124,3 +124,24 @@ Pour exécuter les tests dans un GitHub Codespace ou un environnement CI :
 ## Note importante
 
 Les tests n'importent pas directement les modules `custom_components/rtetempo/` pour éviter les dépendances Home Assistant. Les fonctions et classes sont dupliquées/mockées dans les fichiers de test.
+
+## Configuration requise pour le repo GitHub (HACS)
+
+Pour que le workflow HACS passe sur un fork, le repo GitHub doit avoir :
+
+1. **Issues activées** : Settings → Features → Issues ✓
+2. **Topics configurés** : Settings → About → Topics
+   - Ajouter au minimum : `home-assistant`, `hacs`
+   - Recommandés : `tempo`, `rte`, `home-assistant-custom-component`
+
+Ces configurations sont requises par [HACS](https://hacs.xyz/docs/publish/include#check-repository) pour valider l'intégration.
+
+### Via GitHub CLI
+
+```bash
+# Activer les issues
+gh repo edit OWNER/REPO --enable-issues
+
+# Ajouter les topics
+gh repo edit OWNER/REPO --add-topic home-assistant --add-topic hacs --add-topic tempo --add-topic rte --add-topic home-assistant-custom-component
+```

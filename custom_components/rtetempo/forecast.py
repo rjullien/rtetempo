@@ -20,6 +20,7 @@ class ForecastDay:
     date: datetime.date
     color: str                     # "bleu", "blanc", "rouge" (normalized to lowercase)
     probability: Optional[float]   # 0.67 for example (for 67%)
+    indicator: Optional[str] = None  # "D" (dimanche), "F" (férié), or None
     source: str = "open_dpe"
 
 

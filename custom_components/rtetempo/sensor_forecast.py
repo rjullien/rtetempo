@@ -142,10 +142,18 @@ class OpenDPEForecastSensor(CoordinatorEntity, SensorEntity):
             self._attr_native_value = get_color_name(color)
 
         # Extra attributes for both sensors
-        self._attr_extra_state_attributes = {
-            "date": forecast.date.isoformat(),
-            "probability": forecast.probability,
-            "attribution": "Données Tempo : Open DPE (https://open-dpe.fr)",
-        }
+        # When indicator is set ("D" for Sunday, "F" for holiday), display it instead of probability
+        if forecast.indicator:
+            self._attr_extra_state_attributes = {
+                "date": forecast.date.isoformat(),
+                "indicator": forecast.indicator,
+                "attribution": "Données Tempo : Open DPE (https://open-dpe.fr)",
+            }
+        else:
+            self._attr_extra_state_attributes = {
+                "date": forecast.date.isoformat(),
+                "probability": forecast.probability,
+                "attribution": "Données Tempo : Open DPE (https://open-dpe.fr)",
+            }
 
         self.async_write_ha_state()

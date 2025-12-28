@@ -136,51 +136,6 @@ def mock_add_entities():
     return MagicMock()
 
 
-@pytest.fixture
-def sample_forecasts():
-    """Sample forecast data."""
-    return [
-        ForecastDay(
-            date=datetime.date(2025, 1, 15),
-            color="bleu",
-            probability=0.85,
-        ),
-        ForecastDay(
-            date=datetime.date(2025, 1, 16),
-            color="blanc",
-            probability=0.72,
-        ),
-        ForecastDay(
-            date=datetime.date(2025, 1, 17),
-            color="rouge",
-            probability=0.45,
-        ),
-    ]
-
-
-@pytest.fixture
-def sunday_forecast():
-    """Sunday forecast (should be blue with D indicator)."""
-    return ForecastDay(
-        date=datetime.date(2025, 1, 19),  # Sunday
-        color="bleu",
-        probability=None,
-        indicator="D",
-    )
-
-
-@pytest.fixture
-def holiday_forecast():
-    """Holiday forecast (should be blue with F indicator)."""
-    return ForecastDay(
-        date=datetime.date(2025, 1, 1),  # New Year's Day
-        color="bleu",
-        probability=None,
-        indicator="F",
-    )
-
-
-
 # ============================================================================
 # Forecast Fixtures (existing)
 # ============================================================================

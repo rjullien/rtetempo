@@ -301,7 +301,7 @@ class TestProperty4NextColorTime:
         
         with patch('custom_components.rtetempo.sensor.datetime') as mock_datetime:
             mock_datetime.datetime.now.return_value = mock_now
-            mock_datetime.datetime.side_effect = lambda *args, **kwargs: datetime.datetime(*args, **kwargs)
+            mock_datetime.datetime.side_effect = datetime.datetime
             mock_datetime.timedelta = datetime.timedelta
             sensor.update()
         
@@ -339,7 +339,7 @@ class TestProperty5NextCycleTime:
         
         with patch('custom_components.rtetempo.sensor.datetime') as mock_datetime:
             mock_datetime.datetime.now.return_value = mock_now
-            mock_datetime.datetime.side_effect = lambda *args, **kwargs: datetime.datetime(*args, **kwargs)
+            mock_datetime.datetime.side_effect = datetime.datetime
             sensor.update()
         
         result = sensor._attr_native_value
@@ -374,7 +374,7 @@ class TestProperty6OffPeakChangeTime:
         
         with patch('custom_components.rtetempo.sensor.datetime') as mock_datetime:
             mock_datetime.datetime.now.return_value = mock_now
-            mock_datetime.datetime.side_effect = lambda *args, **kwargs: datetime.datetime(*args, **kwargs)
+            mock_datetime.datetime.side_effect = datetime.datetime
             mock_datetime.timedelta = datetime.timedelta
             sensor.update()
         

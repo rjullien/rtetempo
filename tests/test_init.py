@@ -171,33 +171,21 @@ class TestUpdateListener:
     """Tests for update_listener function."""
 
     @pytest.mark.asyncio
-    async def test_update_listener_retrieves_api_worker(self, mock_hass, mock_config_entry, mock_api_worker):
-        """Test that update_listener retrieves APIWorker from hass.data."""
-        mock_hass.data[DOMAIN][mock_config_entry.entry_id] = mock_api_worker
+    async def test_update_listener_calls_async_reload(self, mock_hass, mock_config_entry):
+        """Test that update_listener calls async_reload to apply changes."""
+        mock_hass.config_entries.async_reload = AsyncMock()
+        
+        await update_listener(mock_hass, mock_config_entry)
+        
+        mock_hass.config_entries.async_reload.assert_called_once_with(mock_config_entry.entry_id)
+
+    @pytest.mark.asyncio
+    async def test_update_listener_reloads_on_option_change(self, mock_hass, mock_config_entry):
+        """Test that update_listener reloads integration when options change."""
+        mock_hass.config_entries.async_reload = AsyncMock()
         mock_config_entry.options = {OPTION_ADJUSTED_DAYS: True}
         
         await update_listener(mock_hass, mock_config_entry)
         
-        # Should have accessed the API worker
-        mock_api_worker.update_options.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_update_listener_updates_adjusted_days(self, mock_hass, mock_config_entry, mock_api_worker):
-        """Test that update_listener updates adjusted_days option."""
-        mock_hass.data[DOMAIN][mock_config_entry.entry_id] = mock_api_worker
-        mock_config_entry.options = {OPTION_ADJUSTED_DAYS: True}
-        
-        await update_listener(mock_hass, mock_config_entry)
-        
-        mock_api_worker.update_options.assert_called_once_with(True)
-
-    @pytest.mark.asyncio
-    async def test_update_listener_logs_error_when_api_worker_not_found(self, mock_hass, mock_config_entry):
-        """Test that update_listener logs error when APIWorker not found."""
-        # Remove the entry from hass.data
-        mock_hass.data[DOMAIN] = {}
-        
-        with patch('custom_components.rtetempo._LOGGER') as mock_logger:
-            await update_listener(mock_hass, mock_config_entry)
-            
-            mock_logger.error.assert_called_once()
+        # Reload should be called regardless of which option changed
+        mock_hass.config_entries.async_reload.assert_called_once()

@@ -1,7 +1,7 @@
 """Tests for sensor.py module."""
 import datetime
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from hypothesis import given, strategies as st, settings
 
 from custom_components.rtetempo.sensor import (

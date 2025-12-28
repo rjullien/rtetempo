@@ -5,7 +5,6 @@ Tests cover helper functions, sensor availability, state updates, and attributes
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
 from typing import Optional, List
 from unittest.mock import MagicMock, PropertyMock
 

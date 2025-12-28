@@ -98,7 +98,13 @@ async def async_setup_entry(
         config_entry.async_on_unload(forecast_coordinator.async_unload)
         
         # Store coordinator reference for potential cleanup
-        hass.data[DOMAIN][f"{config_entry.entry_id}_forecast"] = forecast_coordinator
+        forecast_key = f"{config_entry.entry_id}_forecast"
+        hass.data[DOMAIN][forecast_key] = forecast_coordinator
+        
+        # Register cleanup to remove the reference from hass.data
+        def cleanup_forecast_data():
+            hass.data[DOMAIN].pop(forecast_key, None)
+        config_entry.async_on_unload(cleanup_forecast_data)
         
         NUM_FORECAST_DAYS = 7  # 7 total days, but only 6 forecast sensors created (J+2 à J+7; J+1 is skipped)
         

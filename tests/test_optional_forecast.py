@@ -178,8 +178,11 @@ class TestForecastCoordinatorCleanup:
                 
                 await async_setup_entry(mock_hass, mock_config_entry, mock_add_entities)
         
-        # Verify async_on_unload was called with the coordinator's cleanup function
-        mock_config_entry.async_on_unload.assert_called_with(mock_coordinator.async_unload)
+        # Verify async_on_unload was called twice: once for coordinator, once for data cleanup
+        assert mock_config_entry.async_on_unload.call_count == 2
+        # First call should be for coordinator cleanup
+        calls = mock_config_entry.async_on_unload.call_args_list
+        assert calls[0][0][0] == mock_coordinator.async_unload
 
     @pytest.mark.asyncio
     async def test_forecast_coordinator_stored_in_hass_data(self):
@@ -207,3 +210,40 @@ class TestForecastCoordinatorCleanup:
         
         # Verify coordinator is stored in hass.data
         assert mock_hass.data[DOMAIN]["test_entry_id_forecast"] == mock_coordinator
+
+    @pytest.mark.asyncio
+    async def test_forecast_data_cleanup_removes_reference(self):
+        """Test that the cleanup callback removes the forecast reference from hass.data."""
+        from custom_components.rtetempo.sensor import async_setup_entry
+        
+        mock_hass = MagicMock()
+        mock_hass.data = {DOMAIN: {"test_entry_id": MagicMock()}}
+        
+        mock_config_entry = MagicMock()
+        mock_config_entry.entry_id = "test_entry_id"
+        mock_config_entry.options = {OPTION_FORECAST_ENABLED: True}
+        
+        # Capture the cleanup callbacks
+        cleanup_callbacks = []
+        mock_config_entry.async_on_unload = lambda cb: cleanup_callbacks.append(cb)
+        
+        mock_add_entities = MagicMock()
+        
+        with patch('custom_components.rtetempo.sensor.asyncio.sleep', new_callable=AsyncMock):
+            with patch('custom_components.rtetempo.sensor.ForecastCoordinator') as mock_coordinator_class:
+                mock_coordinator = MagicMock()
+                mock_coordinator.async_config_entry_first_refresh = AsyncMock()
+                mock_coordinator.async_unload = MagicMock()
+                mock_coordinator_class.return_value = mock_coordinator
+                
+                await async_setup_entry(mock_hass, mock_config_entry, mock_add_entities)
+        
+        # Verify coordinator is stored
+        assert "test_entry_id_forecast" in mock_hass.data[DOMAIN]
+        
+        # Call the data cleanup callback (second one registered)
+        data_cleanup = cleanup_callbacks[1]
+        data_cleanup()
+        
+        # Verify reference is removed
+        assert "test_entry_id_forecast" not in mock_hass.data[DOMAIN]

@@ -6,7 +6,6 @@ Each test references the specific property and requirements it validates.
 from __future__ import annotations
 
 import datetime
-from typing import List
 
 import pytest
 from hypothesis import given, settings, strategies as st

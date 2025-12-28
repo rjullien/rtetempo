@@ -1,5 +1,10 @@
 # Tests for RTE Tempo
 
+[![Tests](https://github.com/hekmon/rtetempo/actions/workflows/tests.yml/badge.svg)](https://github.com/hekmon/rtetempo/actions/workflows/tests.yml)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)](tests/README.md)
+[![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11-blue)](https://www.python.org/)
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+
 ## Prérequis
 
 - Python 3.9+

@@ -47,6 +47,7 @@ _LOGGER = logging.getLogger(__name__)
 # Importing coordinator and sensors for forecast data
 from .forecast_coordinator import ForecastCoordinator
 from .sensor_forecast import OpenDPEForecastSensor
+from .sensor_accuracy import TempoAccuracySensor
 
 # config flow setup
 async def async_setup_entry(
@@ -115,6 +116,9 @@ async def async_setup_entry(
             forecast_sensors.append(OpenDPEForecastSensor(forecast_coordinator, index, visual=False))
             # Visual version (emoji)
             forecast_sensors.append(OpenDPEForecastSensor(forecast_coordinator, index, visual=True))
+        
+        # Add accuracy sensor (compares forecasts to actual colors)
+        forecast_sensors.append(TempoAccuracySensor(hass, config_entry.entry_id))
         
         async_add_entities(forecast_sensors, True)
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 import datetime
 import logging
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .tempo_rules import is_french_holiday

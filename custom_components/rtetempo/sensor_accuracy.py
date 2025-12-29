@@ -2,6 +2,18 @@
 
 This module provides a sensor that displays the accuracy of Tempo forecasts
 by comparing predictions to actual colors.
+
+Note:
+    This sensor requires the Open DPE forecast option to be enabled in the
+    integration options. The accuracy sensor analyzes historical data from
+    the forecast sensors (J+2 to J+7), so it will only be created when
+    forecasts are enabled. Without forecast history, there is no data to
+    analyze.
+    
+    The AccuracyAnalyzer class contains the core business logic and is
+    thoroughly tested in tests/test_accuracy.py. This sensor class is a
+    thin wrapper that exposes the analyzer results as a Home Assistant
+    sensor entity.
 """
 from __future__ import annotations
 
@@ -10,7 +22,7 @@ from datetime import timedelta
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.config_entries import ConfigEntry
+
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
@@ -39,11 +51,13 @@ class TempoAccuracySensor(SensorEntity):
         state: Accuracy percentage for last 30 days
         accuracy_7d: Accuracy percentage for last 7 days
         accuracy_30d: Accuracy percentage for last 30 days
+        accuracy_j2..j7: Accuracy percentage per horizon
         total_days: Total number of days analyzed
-        correct_days: Number of correct predictions
-        incorrect_days: Number of incorrect predictions
-        excluded_days: Number of excluded days (Sundays/holidays)
-        history: List of comparison results
+        correct_predictions: Number of correct predictions
+        incorrect_predictions: Number of incorrect predictions
+        excluded_predictions: Number of excluded days (Sundays/holidays)
+        past_matrix: Matrix of past comparison results
+        future_matrix: Matrix of upcoming forecast comparison results
     """
     
     _attr_has_entity_name = True
@@ -92,4 +106,5 @@ class TempoAccuracySensor(SensorEntity):
             self._attr_available = True
         except Exception as err:
             _LOGGER.error("Error analyzing forecast accuracy: %s", err)
+            self._data = {}
             self._attr_available = False

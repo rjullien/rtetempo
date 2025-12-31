@@ -223,12 +223,20 @@ class TestProperty1HolidayLikeSaturday:
             assert result.color != "rouge", f"Holiday {holiday_date} should never be red, got {result.color}"
             assert result.indicator == "F", f"Holiday {holiday_date} should have indicator 'F', got {result.indicator}"
             
-            # If original was red, should become blanc
+            # If original was red, should become blanc with adjusted probability
             if color == "rouge":
                 assert result.color == "blanc", f"Holiday red should become blanc, got {result.color}"
+                # Verify probability conversion logic
+                original_prob = probability if probability is not None else 0.0
+                if original_prob > 0.6:
+                    assert result.probability == 1.0, f"Holiday red with prob > 0.6 should become 1.0, got {result.probability}"
+                else:
+                    expected_prob = min(original_prob + 0.1, 1.0)
+                    assert result.probability == expected_prob, f"Holiday red with prob {original_prob} should become {expected_prob}, got {result.probability}"
             else:
-                # bleu or blanc should stay the same
+                # bleu or blanc should stay the same with preserved probability
                 assert result.color == color, f"Holiday {color} should stay {color}, got {result.color}"
+                assert result.probability == probability, f"Holiday {color} should preserve probability {probability}, got {result.probability}"
 
 
 class TestProperty2SundayAlwaysBlue:

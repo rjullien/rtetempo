@@ -72,16 +72,12 @@ automation:
     trigger:
       - platform: state
         entity_id: calendar.rte_tempo_calendrier
+        to: "on"
     condition:
-      - condition: state
-        entity_id: calendar.rte_tempo_calendrier
-        state: "on"
-        attribute: message
-        # L'attribut "message" contient l'emoji (🔴, ⚪, 🔵)
-    action:
-      # Vérifier si c'est un jour rouge via template
+      # Vérifier si c'est un jour rouge via l'attribut message (contient 🔴, ⚪, ou 🔵)
       - condition: template
         value_template: "{{ '🔴' in state_attr('calendar.rte_tempo_calendrier', 'message') }}"
+    action:
       - service: switch.turn_off
         target:
           entity_id: switch.chauffe_eau

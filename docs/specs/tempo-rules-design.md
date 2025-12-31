@@ -75,14 +75,14 @@ async def _async_update_data(self) -> List[ForecastDay]:
 class ForecastDay:
     date: datetime.date
     color: str                     # "bleu", "blanc", "rouge"
-    probability: Optional[float]   # 0.0 à 1.0, ou None si indicator est défini
+    probability: Optional[float]   # 0.0 à 1.0 (peut coexister avec indicator "F")
     indicator: Optional[str]       # "D" (dimanche), "F" (férié), ou None
     source: str = "open_dpe"
 ```
 
 Le champ `indicator` :
-- `"D"` pour dimanche (remplace probability, priorité maximale)
-- `"F"` pour jour férié non-dimanche (remplace probability)
+- `"D"` pour dimanche (probability = None, priorité maximale)
+- `"F"` pour jour férié non-dimanche (probability préservée ou ajustée si rouge)
 - `None` pour les autres jours (probability est utilisé)
 
 ## Jours fériés français

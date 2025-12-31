@@ -104,10 +104,15 @@ def adjust_forecast_day(forecast: "ForecastDay") -> "ForecastDay":
     """Adjust a single forecast day according to Tempo rules.
 
     Rules applied in order of priority:
-    1. French holidays → blue + indicator "F"
-    2. Sundays (non-holiday) → blue + indicator "D"
-    3. Saturdays with red → convert to white with adjusted probability
-    4. Otherwise → keep original
+    1. Sundays → blue + indicator "D" (always blue, highest priority)
+    2. French holidays with red → convert to white + indicator "F"
+    3. French holidays with allowed colors → keep color + indicator "F"
+    4. Saturdays with red → convert to white with adjusted probability
+    5. Otherwise → keep original
+
+    Note: Per EDF Tempo rules, red days never occur on weekends or public holidays.
+    - Sundays are always blue (part of the 300 blue days per year)
+    - Saturdays and holidays can be blue or white, never red
 
     Args:
         forecast: The original forecast to adjust.
@@ -120,17 +125,7 @@ def adjust_forecast_day(forecast: "ForecastDay") -> "ForecastDay":
     date = forecast.date
     weekday = date.weekday()  # 0=Monday, 5=Saturday, 6=Sunday
 
-    # Rule 1: French holidays → blue + indicator "F" (highest priority)
-    if is_french_holiday(date):
-        return ForecastDay(
-            date=date,
-            color="bleu",
-            probability=None,
-            indicator="F",
-            source=forecast.source,
-        )
-
-    # Rule 2: Sundays (non-holiday) → blue + indicator "D"
+    # Rule 1: Sundays → blue + indicator "D" (highest priority, always blue)
     if weekday == 6:  # Sunday
         return ForecastDay(
             date=date,
@@ -140,7 +135,33 @@ def adjust_forecast_day(forecast: "ForecastDay") -> "ForecastDay":
             source=forecast.source,
         )
 
-    # Rule 3: Saturdays with red → convert to white
+    # Rule 2 & 3: French holidays (like Saturdays - can be blue or white, never red)
+    if is_french_holiday(date):
+        if forecast.color == "rouge":
+            # Holiday with red → convert to white + indicator "F"
+            original_prob = forecast.probability if forecast.probability is not None else 0.0
+            if original_prob > 0.6:
+                new_probability = 1.0
+            else:
+                new_probability = min(original_prob + 0.1, 1.0)
+            return ForecastDay(
+                date=date,
+                color="blanc",
+                probability=new_probability,
+                indicator="F",
+                source=forecast.source,
+            )
+        else:
+            # Holiday with allowed color (bleu, blanc) → keep color + indicator "F"
+            return ForecastDay(
+                date=date,
+                color=forecast.color,
+                probability=forecast.probability,
+                indicator="F",
+                source=forecast.source,
+            )
+
+    # Rule 4: Saturdays with red → convert to white
     if weekday == 5 and forecast.color == "rouge":  # Saturday
         original_prob = forecast.probability if forecast.probability is not None else 0.0
         if original_prob > 0.6:
@@ -158,8 +179,8 @@ def adjust_forecast_day(forecast: "ForecastDay") -> "ForecastDay":
             source=forecast.source,
         )
 
-    # Rule 4: Saturday with allowed colors (bleu, blanc) → keep original
-    # Rule 5: Weekdays (non-holiday) → keep original
+    # Rule 5: Saturday with allowed colors (bleu, blanc) → keep original
+    # Rule 6: Weekdays (non-holiday) → keep original
     # Return a copy with indicator explicitly set to None for consistency
     return ForecastDay(
         date=forecast.date,

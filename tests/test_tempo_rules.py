@@ -183,13 +183,17 @@ class TestHolidayDetection:
 # Property-Based Tests
 # ============================================================================
 
-class TestProperty1HolidayAlwaysBlue:
+class TestProperty1HolidayLikeSaturday:
     """
-    Property 1: Holiday Always Blue with F Indicator
+    Property 1: Holiday Like Saturday (Never Red) with F Indicator
     
-    *For any* forecast where the date is a French holiday, the adjusted forecast
-    SHALL have color "bleu" and indicator "F", regardless of the original color,
-    probability, and whether it's also a Sunday.
+    Per EDF Tempo rules: "Red days never take place on the weekends, nor on public holidays."
+    
+    *For any* forecast where the date is a French holiday (non-Sunday):
+    - If original color is "rouge", convert to "blanc" with adjusted probability + indicator "F"
+    - If original color is "bleu" or "blanc", keep color + indicator "F"
+    
+    Note: Sunday holidays are handled by the Sunday rule (always blue + D takes precedence)
     
     **Validates: Requirements 2.1, 2.2, 2.3, 2.5**
     """
@@ -200,8 +204,8 @@ class TestProperty1HolidayAlwaysBlue:
         probability=probability_strategy,
     )
     @settings(max_examples=100)
-    def test_holiday_always_blue_with_f(self, holiday_date, color, probability):
-        """Feature: tempo-forecast-rules, Property 1: Holiday Always Blue with F Indicator"""
+    def test_holiday_never_red_with_f(self, holiday_date, color, probability):
+        """Feature: tempo-forecast-rules, Property 1: Holiday Never Red with F Indicator"""
         forecast = ForecastDay(
             date=holiday_date,
             color=color,
@@ -210,8 +214,21 @@ class TestProperty1HolidayAlwaysBlue:
         
         result = adjust_forecast_day(forecast)
         
-        assert result.color == "bleu", f"Holiday {holiday_date} should be blue, got {result.color}"
-        assert result.indicator == "F", f"Holiday {holiday_date} should have indicator 'F', got {result.indicator}"
+        # If it's a Sunday, Sunday rule takes precedence (blue + D)
+        if holiday_date.weekday() == 6:
+            assert result.color == "bleu", f"Sunday holiday {holiday_date} should be blue"
+            assert result.indicator == "D", f"Sunday holiday {holiday_date} should have indicator 'D'"
+        else:
+            # Non-Sunday holiday: never red, always has F indicator
+            assert result.color != "rouge", f"Holiday {holiday_date} should never be red, got {result.color}"
+            assert result.indicator == "F", f"Holiday {holiday_date} should have indicator 'F', got {result.indicator}"
+            
+            # If original was red, should become blanc
+            if color == "rouge":
+                assert result.color == "blanc", f"Holiday red should become blanc, got {result.color}"
+            else:
+                # bleu or blanc should stay the same
+                assert result.color == color, f"Holiday {color} should stay {color}, got {result.color}"
 
 
 class TestProperty2SundayAlwaysBlue:
